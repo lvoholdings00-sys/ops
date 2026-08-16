@@ -183,7 +183,7 @@ footer{border-top:.5px solid color-mix(in srgb,var(--accent) 15%,transparent);pa
     <div id="portalRedirect">
       <p class="redirect-title" data-scramble>Operations Portal</p>
       <p class="redirect-name" id="redirectName">—</p>
-      <p class="redirect-sub" data-scramble>You're signed in. Your dashboard is waiting.</p>
+      <p class="redirect-sub" id="redirectSub" data-scramble>You're signed in. Redirecting to your dashboard…</p>
       <a class="redirect-btn" href="">Enter Dashboard →</a>
       <div class="redirect-rule"></div>
     </div>
@@ -311,9 +311,12 @@ footer{border-top:.5px solid color-mix(in srgb,var(--accent) 15%,transparent);pa
     const navUserBtn = document.getElementById('navUserBtn');
     const clerkNavBtn = document.getElementById('clerkNavBtn');
     const signInEl = document.getElementById('clerkSignIn');
+    const redirectSub = document.getElementById('redirectSub');
     let signInMounted = false;
+    let autoRedirectTimer = null;
 
     function showGate() {
+      if (autoRedirectTimer) { clearTimeout(autoRedirectTimer); autoRedirectTimer = null; }
       gate.style.display = 'block';
       redirect.classList.remove('show');
       navUserBtn.classList.remove('show');
@@ -329,8 +332,14 @@ footer{border-top:.5px solid color-mix(in srgb,var(--accent) 15%,transparent);pa
       gate.style.display = 'none';
       redirect.classList.add('show');
       document.getElementById('redirectName').textContent = user.firstName || 'Member';
+      if (redirectSub) redirectSub.textContent = "You're signed in. Redirecting to your dashboard…";
       navUserBtn.classList.add('show');
       Clerk.mountUserButton(clerkNavBtn, { appearance: clerkAppearance });
+
+      if (autoRedirectTimer) clearTimeout(autoRedirectTimer);
+      autoRedirectTimer = setTimeout(() => {
+        window.location.href = dashboardUrl;
+      }, 1200);
     }
 
     Clerk.user ? showSignedIn(Clerk.user) : showGate();

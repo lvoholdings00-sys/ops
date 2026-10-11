@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>LVO Operations · GRO EHR & Resident Care Management</title>
+  <link rel="icon" type="image/png" href="/assets/logo.png"/>
+  <link rel="apple-touch-icon" href="/assets/logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cormorant+SC:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    input,textarea,select{font-size:15px !important}
+    :root{
+      --green:#1D9E75;--green-dim:rgba(29,158,117,.16);--green-hi:rgba(29,158,117,.42);
+      --green-glow:rgba(29,158,117,.08);
+      --red:#CC2020;--red-dim:rgba(204,32,32,.18);
+      --gold:#C8A96E;--gold-dim:rgba(200,169,110,.18);
+      --purple:#A359EC;
+      --bg:#030303;--bg2:#0a0a0a;--bg3:#111111;
+      --chrome:#C8C8D0;--white:#F0EEEC;--dim:#707068;--dim2:#94948C;
+      --border:rgba(29,158,117,.18);--border-hi:rgba(29,158,117,.45);
+      --sidebar:240px;--topbar:54px;
+    }
+    html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:'Cormorant Garamond',Georgia,serif}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.025;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+    /* ── DIVISIONS BAR ── */
+    #divBar{height:26px;background:#000;border-bottom:.5px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.25em;text-transform:uppercase;z-index:110;position:relative}
+    .db-links{display:flex;align-items:center;gap:1.4rem}
+    .db-link{color:var(--dim);text-decoration:none;transition:color .2s}
+    .db-link:hover{color:var(--white)}
+    .db-link.active{color:var(--green);font-weight:600}
+    .db-brand{color:var(--dim2);letter-spacing:.3em}
+
+    /* ── TOPBAR ── */
+    #topbar{height:var(--topbar);background:var(--bg2);border-bottom:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.8rem;position:relative;z-index:100}
+    .tb-left{display:flex;align-items:center;gap:1.2rem}
+    .tb-mark{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;letter-spacing:.28em;color:var(--green);text-decoration:none}
+    .tb-divider{width:1px;height:18px;background:var(--border)}
+    .tb-tag{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.3em;color:var(--dim2);text-transform:uppercase}
+    .tb-right{display:flex;align-items:center;gap:1rem}
+
+    /* Role Switcher Pill */
+    .role-badge{display:flex;align-items:center;background:var(--bg3);border:.5px solid var(--border);padding:.25rem .4rem;gap:.5rem}
+    .role-label{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.2em;color:var(--dim2);text-transform:uppercase;margin-left:.3rem}
+    .role-toggle{background:none;border:.5px solid var(--green);color:var(--green);font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.18em;padding:.2rem .6rem;cursor:pointer;text-transform:uppercase;transition:all .2s}
+    .role-toggle:hover{background:var(--green);color:#000}
+    .user-chip{display:flex;align-items:center;gap:.6rem;border-left:.5px solid var(--border);padding-left:.9rem}
+    .user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:.5px solid var(--border-hi)}
+    .user-name{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.2em;color:var(--chrome);text-transform:uppercase}
+    .btn-signout{background:none;border:.5px solid var(--border);color:var(--dim);font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.2em;padding:.35rem .65rem;cursor:pointer;text-transform:uppercase;transition:all .2s}
+    .btn-signout:hover{color:var(--green);border-color:var(--green)}
+
+    /* ── SHELL & SIDEBAR ── */
+    #shell{height:calc(100vh - var(--topbar) - 26px);display:flex;overflow:hidden}
+    #sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg2);border-right:.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+    .sb-sec{padding:1.2rem 1rem .4rem}
+    .sb-hdr{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.4em;color:var(--dim);text-transform:uppercase;margin-bottom:.6rem;padding-left:.4rem}
+    .nav-btn{display:flex;align-items:center;gap:.7rem;padding:.65rem .85rem;cursor:pointer;border-left:2px solid transparent;transition:all .2s;margin-bottom:2px}
+    .nav-btn:hover{background:var(--green-glow);border-left-color:var(--green-hi)}
+    .nav-btn.active{background:var(--green-glow);border-left-color:var(--green)}
+    .nav-ico{font-size:.7rem;opacity:.5;width:16px;text-align:center;transition:opacity .2s}
+    .nav-btn:hover .nav-ico,.nav-btn.active .nav-ico{opacity:1;color:var(--green)}
+    .nav-txt{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.2em;color:var(--dim2);text-transform:uppercase;transition:color .2s}
+    .nav-btn:hover .nav-txt{color:var(--chrome)}
+    .nav-btn.active .nav-txt{color:var(--green);font-weight:600}
+    .nav-cnt{margin-left:auto;font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.1em;color:var(--green);background:var(--green-dim);padding:.12rem .35rem;border:.5px solid var(--border)}
+    .sb-foot{margin-top:auto;padding:1rem;border-top:.5px solid var(--border)}
+    .sb-link{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.25em;color:var(--dim);text-decoration:none;text-transform:uppercase;display:block;padding:.3rem 0;transition:color .2s}
+    .sb-link:hover{color:var(--green)}
+
+    /* ── MAIN CONTENT ── */
+    #main{flex:1;overflow-y:auto;padding:2rem 2.4rem 4rem;background:var(--bg)}
+    .page-title{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:900;letter-spacing:.12em;color:var(--chrome);line-height:1}
+    .page-sub{font-size:.9rem;font-weight:300;font-style:italic;color:var(--dim2);margin-top:.3rem}
+    .sec-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem}
+
+    /* ── METRIC STATS CARDS ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--bg2);border:.5px solid var(--border);padding:1.2rem 1.4rem;position:relative}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent)}
+    .stat-val{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;letter-spacing:.1em;color:var(--green);margin-top:.2rem}
+    .stat-lbl{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+    .stat-meta{font-size:.82rem;font-style:italic;color:var(--dim2);margin-top:.3rem}
+
+    /* ── PANELS ── */
+    .tab-panel{display:none}
+    .tab-panel.active{display:block;animation:fadeUp .3s ease forwards}
+
+    /* ── TABLES & CARDS ── */
+    .card{background:var(--bg2);border:.5px solid var(--border);position:relative;margin-bottom:1.8rem}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent)}
+    .card-hdr{padding:1rem 1.4rem;border-bottom:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem}
+    .card-title{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.3em;color:var(--green);text-transform:uppercase}
+    .card-body{padding:1.4rem}
+
+    table{width:100%;border-collapse:collapse;text-align:left}
+    th{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.25em;color:var(--dim);text-transform:uppercase;padding:.8rem .9rem;border-bottom:.5px solid var(--border)}
+    td{font-size:.88rem;color:var(--chrome);padding:.85rem .9rem;border-bottom:.5px solid rgba(29,158,117,.08);font-style:italic}
+    tr:hover td{background:rgba(29,158,117,.03)}
+
+    /* Pills & Badges */
+    .badge{display:inline-block;font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.15em;text-transform:uppercase;padding:.2rem .55rem;border:.5px solid}
+    .badge.green{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+    .badge.gold{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+    .badge.red{color:var(--red);border-color:var(--red);background:var(--red-dim)}
+    .badge.dim{color:var(--dim2);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.03)}
+
+    /* Buttons */
+    .btn{background:transparent;border:.5px solid var(--green);color:var(--green);font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.25em;padding:.55rem 1.1rem;cursor:pointer;text-transform:uppercase;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
+    .btn:hover{background:var(--green);color:#000}
+    .btn.sm{padding:.35rem .7rem;font-size:.36rem}
+    .btn.gold{border-color:var(--gold);color:var(--gold)}
+    .btn.gold:hover{background:var(--gold);color:#000}
+    .btn.red{border-color:var(--red);color:var(--red)}
+    .btn.red:hover{background:var(--red);color:#fff}
+
+    /* Forms */
+    .f-group{margin-bottom:1.1rem;text-align:left}
+    .f-label{display:block;font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;margin-bottom:.4rem}
+    .f-input,.f-select,.f-textarea{width:100%;background:var(--bg3);border:.5px solid var(--border);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:.95rem;padding:.65rem .85rem;outline:none;transition:border-color .2s}
+    .f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--green)}
+    .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+    /* Modal / Drawer */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:none;align-items:center;justify-content:center;padding:1.5rem}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--bg2);border:.5px solid var(--border-hi);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:2rem;position:relative}
+    .modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent)}
+    .modal-close{position:absolute;top:1rem;right:1.2rem;background:none;border:none;color:var(--dim);font-size:1.2rem;cursor:pointer}
+    .modal-close:hover{color:var(--white)}
+
+    /* Rewards Store Cards */
+    .rewards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.2rem}
+    .reward-item{background:var(--bg3);border:.5px solid var(--border);padding:1.2rem;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+    .reward-pts{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:900;color:var(--gold);margin:.4rem 0}
+    .reward-title{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.2em;color:var(--chrome);text-transform:uppercase}
+    .reward-desc{font-size:.85rem;font-style:italic;color:var(--dim2);margin-bottom:1rem;line-height:1.6}
+
+    /* Toast */
+    #toast{position:fixed;bottom:2rem;right:2rem;z-index:9999;background:var(--bg3);border:.5px solid var(--green);color:var(--green);font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.2em;padding:.8rem 1.4rem;display:none;animation:fadeIn .25s ease}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+    @media(max-width:850px){
+      #sidebar{width:64px}
+      .sb-hdr,.nav-txt,.nav-cnt,.sb-foot{display:none}
+      .nav-btn{justify-content:center;padding:.8rem 0}
+      .nav-ico{opacity:.8;font-size:.9rem}
+      #main{padding:1.5rem 1rem}
+      .f-row{grid-template-columns:1fr}
+      .tb-tag{display:none}
+    }
+
+    .tb-logo{height:26px;width:auto;margin-right:.8rem;display:block}
+    .av{border-radius:50%;object-fit:cover;flex-shrink:0;border:.5px solid var(--border-hi,rgba(255,255,255,.3))}
+    .av-i{display:inline-flex;align-items:center;justify-content:center;background:var(--gold-dim,rgba(255,255,255,.08));color:var(--gold,#fff);font-family:'Cinzel',serif;letter-spacing:.04em}
+    .av-slot{display:inline-flex;margin-right:-.4rem}
+  </style>
+</head>
+<body>
+
+  <!-- DIVISIONS BAR -->
+  <div id="divBar">
+    <span class="db-brand">𝐋𝐕𝐎 Holdings Suite</span>
+    <div class="db-links">
+      <a href="https://vindex.wearelvo.com/dashboard/" class="db-link">Div 01 · Vindex (Assets)</a>
+      <a href="https://alliance.wearelvo.com/dashboard/" class="db-link">Div 02 · Alliance (Capital)</a>
+      <a href="https://operations.wearelvo.com/dashboard/" class="db-link active">Div 03 · Operations</a>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="tb-left">
+      <img src="/assets/logo.png" class="tb-logo" alt="LVO"/>
+      <a href="https://operations.wearelvo.com" class="tb-mark">𝐋𝐕𝐎 Operations</a>
+      <div class="tb-divider"></div>
+      <span class="tb-tag">Operations EHR</span>
+    </div>
+    <div class="tb-right">
+      <!-- Role Toggle -->
+      <div class="role-badge">
+        <span class="role-label" id="roleText">Role: LCCA Administrator</span>
+      </div>
+      <div class="user-chip">
+        <span id="userAvatarSlot"></span>
+        <span class="user-name" id="userNameLabel">Victoria Thorne, LCCA</span>
+        <button class="btn-signout" id="btnSignOut">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHELL -->
+  <div id="shell">
+
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sb-sec">
+        <div class="sb-hdr">EHR Navigation</div>
+        <div class="nav-btn active" data-tab="overview">
+          <span class="nav-ico">◈</span>
+          <span class="nav-txt">Overview HUD</span>
+        </div>
+        <div class="nav-btn" data-tab="residents">
+          <span class="nav-ico">◎</span>
+          <span class="nav-txt">Residents / Kids</span>
+          <span class="nav-cnt" id="cntKids">14</span>
+        </div>
+        <div class="nav-btn" data-tab="rewards">
+          <span class="nav-ico">✦</span>
+          <span class="nav-txt">Rewards & Points</span>
+        </div>
+        <div class="nav-btn" data-tab="reports">
+          <span class="nav-ico">⬡</span>
+          <span class="nav-txt">Incident & Shift Logs</span>
+          <span class="nav-cnt" style="color:var(--red);background:var(--red-dim)">2</span>
+        </div>
+        <div class="nav-btn" data-tab="casework">
+          <span class="nav-ico">❖</span>
+          <span class="nav-txt">Case Assignments</span>
+        </div>
+        <div class="nav-btn" data-tab="facilities">
+          <span class="nav-ico">▣</span>
+          <span class="nav-txt">GRO Facilities</span>
+        </div>
+      </div>
+
+      <div class="sb-foot">
+        <a href="https://operations.wearelvo.com" class="sb-link">← Operations Portal</a>
+        <a href="https://wearelvo.com" class="sb-link">← wearelvo.com</a>
+        <div style="font-family:'Cinzel',serif;font-size:.34rem;color:var(--dim);margin-top:.8rem;letter-spacing:.2em">
+          Texas HHS Licensed GRO EHR · v3.2
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN BODY -->
+    <main id="main">
+
+      <!-- ══════════════ TAB 1: OVERVIEW HUD ══════════════ -->
+      <section class="tab-panel active" id="tab-overview">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">General Residential Operations HUD</h1>
+            <p class="page-sub">Central electronic health & resident care monitoring for GRO facilities under LCCA supervision.</p>
+          </div>
+          <div style="display:flex;gap:.8rem">
+            <button class="btn" onclick="openModal('modalNewResident')">+ Intake Resident</button>
+            <button class="btn gold" onclick="openModal('modalNewIncident')">⚠ Log SIR Incident</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-lbl">Active Resident Census</div>
+            <div class="stat-val" id="hudCensus">14 / 20</div>
+            <div class="stat-meta">70% capacity across 3 cottages</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Behavior Points Awarded Today</div>
+            <div class="stat-val" id="hudPointsToday">+480 pts</div>
+            <div class="stat-meta">Positive reinforcement incentive goal met</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Active Case Workload</div>
+            <div class="stat-val" id="hudCasesOpen">14 Cases</div>
+            <div class="stat-meta">Assigned across 4 staff caseworkers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Open SIR Reports</div>
+            <div class="stat-val" style="color:var(--red)" id="hudSIRCount">1 Pending</div>
+            <div class="stat-meta">Awaiting final LCCA review & sign-off</div>
+          </div>
+        </div>
+
+        <!-- Caseload Priority Card -->
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Resident Roster Snapshot & Level Status</span>
+            <button class="btn sm" onclick="switchTab('residents')">View Full Census →</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Resident Name</th>
+                  <th>Age / DOB</th>
+                  <th>Cottage / GRO</th>
+                  <th>Level of Care</th>
+                  <th>Behavior Level</th>
+                  <th>Reward Points</th>
+                  <th>Assigned Caseworker</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tblOverviewResidents"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TAB 2: RESIDENTS / KIDS ══════════════ -->
+      <section class="tab-panel" id="tab-residents">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">Residents & Youth Census (EHR)</h1>
+            <p class="page-sub">Comprehensive clinical profiles, level of care, medical alerts, and resident demographics.</p>
+          </div>
+          <button class="btn" onclick="openModal('modalNewResident')">+ New Resident Intake</button>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Active Resident Census Records</span>
+            <input type="text" id="searchKids" placeholder="Search by name, cottage, caseworker..." class="f-input" style="width:280px;padding:.4rem .8rem;font-size:.85rem !important" oninput="renderResidentsTable()"/>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Chart ID</th>
+                  <th>Resident</th>
+                  <th>GRO Location</th>
+                  <th>LOC Tier</th>
+                  <th>Behavior Level</th>
+                  <th>Point Balance</th>
+                  <th>Medical / Dietary Flags</th>
+                  <th>Caseworker</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tblFullResidents"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TAB 3: REWARDS & POINTS ══════════════ -->
+      <section class="tab-panel" id="tab-rewards">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">Positive Behavioral Intervention & Reward System</h1>
+            <p class="page-sub">Incentivizing growth, life skills, and academic consistency through points and privilege levels.</p>
+          </div>
+          <button class="btn gold" onclick="openModal('modalAwardPoints')">★ Award Resident Points</button>
+        </div>
+
+        <!-- Levels Progression Banner -->
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card" style="border-left:3px solid var(--dim2)">
+            <div class="stat-lbl">Level 1: Orientation</div>
+            <div class="stat-val" style="font-size:1.1rem;color:var(--chrome)">0 – 200 pts</div>
+            <div class="stat-meta">Initial intake, baseline chore mastery, orientation curfew.</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--green)">
+            <div class="stat-lbl">Level 2: Standard Privileges</div>
+            <div class="stat-val" style="font-size:1.1rem;color:var(--green)">201 – 600 pts</div>
+            <div class="stat-meta">Phone calls unlocked, campus rec room access, allowance eligibility.</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--gold)">
+            <div class="stat-lbl">Level 3: Honor Roll</div>
+            <div class="stat-val" style="font-size:1.1rem;color:var(--gold)">601 – 1,200 pts</div>
+            <div class="stat-meta">Weekend field trips, peer mentoring, extended game room time.</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--purple)">
+            <div class="stat-lbl">Level 4: Leadership Circle</div>
+            <div class="stat-val" style="font-size:1.1rem;color:var(--purple)">1,201+ pts</div>
+            <div class="stat-meta">Independent living preparation, job interview prep, special room decor.</div>
+          </div>
+        </div>
+
+        <!-- Rewards Catalog -->
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Redeemable Incentives & Privileges Store</span>
+            <span style="font-size:.85rem;font-style:italic;color:var(--dim2)">Points are deducted upon approval</span>
+          </div>
+          <div class="card-body">
+            <div class="rewards-grid" id="rewardsCatalogGrid"></div>
+          </div>
+        </div>
+
+        <!-- Recent Points Audit Log -->
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Points Awarded & Redemption Ledger</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Resident</th>
+                  <th>Action / Behavior Category</th>
+                  <th>Points</th>
+                  <th>Staff Member</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tblPointsLedger"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TAB 4: INCIDENT & SHIFT REPORTS ══════════════ -->
+      <section class="tab-panel" id="tab-reports">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">Incident Reports (SIR) & Shift Logs</h1>
+            <p class="page-sub">State licensing regulatory compliance, significant incidents, de-escalation tracking, and daily shift handoffs.</p>
+          </div>
+          <div style="display:flex;gap:.8rem">
+            <button class="btn" onclick="openModal('modalShiftNote')">+ Log Shift Handoff</button>
+            <button class="btn red" onclick="openModal('modalNewIncident')">⚠ File SIR Incident</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Significant Incident Reports (SIR)</span>
+            <span class="badge red">Requires LCCA Approval</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Report #</th>
+                  <th>Incident Type</th>
+                  <th>Resident Involved</th>
+                  <th>GRO Location</th>
+                  <th>Date & Time</th>
+                  <th>Reporting Staff</th>
+                  <th>LCCA Review</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tblSIRReports"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Recent Shift Handoff Notes</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Shift Time</th>
+                  <th>Facility Cottage</th>
+                  <th>Logging Staff</th>
+                  <th>Summary & Resident Headcount</th>
+                  <th>Medication Administered</th>
+                </tr>
+              </thead>
+              <tbody id="tblShiftNotes"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TAB 5: CASEWORK ASSIGNMENTS ══════════════ -->
+      <section class="tab-panel" id="tab-casework">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">Casework Assignments & Staff Oversight</h1>
+            <p class="page-sub">Admin / LCCA assigns resident files to employee caseworkers; staff log service notes and milestone deliverables.</p>
+          </div>
+          <button class="btn" onclick="openModal('modalAssignCase')">+ Assign Case to Employee</button>
+        </div>
+
+        <!-- Role Context Notice -->
+        <div class="card" style="background:rgba(29,158,117,.04);border-color:var(--border-hi)">
+          <div class="card-body" style="padding:1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+            <div>
+              <span style="font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.25em;color:var(--green);text-transform:uppercase">Active Role Mode:</span>
+              <span id="roleNoticeText" style="font-size:.9rem;font-style:italic;color:var(--white);margin-left:.5rem">Admin / LCCA (Full Case Assignment & Staff Delegation)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Employee Caseload Assignments</span>
+            <span style="font-size:.82rem;font-style:italic;color:var(--dim2)">Delegated by LCCA Victoria Thorne</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Assigned Caseworker</th>
+                  <th>Resident Client</th>
+                  <th>Deliverable / Focus</th>
+                  <th>Assigned Date</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tblCaseworkAssignments"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Case Progress Notes Section -->
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Logged Casework Progress Notes</span>
+            <button class="btn sm" onclick="openModal('modalAddProgressNote')">+ Add Progress Note</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Resident</th>
+                  <th>Caseworker</th>
+                  <th>Note Category</th>
+                  <th>Summary Narrative</th>
+                  <th>LCCA Sign-off</th>
+                </tr>
+              </thead>
+              <tbody id="tblProgressNotes"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TAB 6: GRO FACILITIES ══════════════ -->
+      <section class="tab-panel" id="tab-facilities">
+        <div class="sec-head">
+          <div>
+            <h1 class="page-title">Licensed GRO Residential Facilities</h1>
+            <p class="page-sub">Campus locations, licensed capacity, residential cottages, and staffing ratios.</p>
+          </div>
+          <button class="btn" onclick="openModal('modalNewFacility')">+ Add Cottage / GRO</button>
+        </div>
+
+        <div class="stats-grid" id="facilitiesGrid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════════════ MODALS ══════════════ -->
+
+  <!-- Modal: Intake Resident -->
+  <div class="modal-overlay" id="modalNewResident">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modalNewResident')">✕</button>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.2em;color:var(--green);margin-bottom:.5rem;text-transform:uppercase">Resident Intake Charting</h2>
+      <p style="font-size:.88rem;color:var(--dim2);font-style:italic;margin-bottom:1.5rem">Enter demographic and placement information for newly admitted youth.</p>
+      <form onsubmit="handleNewResident(event)">
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Full Name</label>
+            <input type="text" id="intakeName" required class="f-input" placeholder="e.g. Marcus Rivera"/>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Date of Birth</label>
+            <input type="date" id="intakeDOB" required class="f-input" value="2010-06-15"/>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Assigned GRO Cottage</label>
+            <select id="intakeFacility" class="f-select">
+              <option value="Haven House (Cottage A)">Haven House (Cottage A)</option>
+              <option value="Oakridge Home (Cottage B)">Oakridge Home (Cottage B)</option>
+              <option value="Crestview Residential Center">Crestview Residential Center</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Level of Care (LOC)</label>
+            <select id="intakeLOC" class="f-select">
+              <option value="Basic">Basic (Tier 1)</option>
+              <option value="Moderate" selected>Moderate (Tier 2)</option>
+              <option value="Specialized">Specialized (Tier 3)</option>
+              <option value="Intensive">Intensive (Tier 4)</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Assigned Employee Caseworker</label>
+          <select id="intakeCaseworker" class="f-select">
+            <option value="Sarah Jenkins, LMSW">Sarah Jenkins, LMSW</option>
+            <option value="David Morales, BSW">David Morales, BSW</option>
+            <option value="Alicia Vance, Case Manager">Alicia Vance, Case Manager</option>
+            <option value="Jason Reed, Youth Specialist">Jason Reed, Youth Specialist</option>
+          </select>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Medical Alerts / Allergies</label>
+          <input type="text" id="intakeMedical" class="f-input" placeholder="e.g. Asthma Inhaler PRN, Peanut Allergy, Gluten Sensitive"/>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem">
+          <button type="button" class="btn" style="border-color:var(--dim);color:var(--dim)" onclick="closeModal('modalNewResident')">Cancel</button>
+          <button type="submit" class="btn">Admit Resident →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Award Points -->
+  <div class="modal-overlay" id="modalAwardPoints">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modalAwardPoints')">✕</button>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.2em;color:var(--gold);margin-bottom:.5rem;text-transform:uppercase">Award Positive Behavior Points</h2>
+      <p style="font-size:.88rem;color:var(--dim2);font-style:italic;margin-bottom:1.5rem">Select a resident and positive action to deposit points directly into their reward bank.</p>
+      <form onsubmit="handleAwardPoints(event)">
+        <div class="f-group">
+          <label class="f-label">Select Resident</label>
+          <select id="ptResidentSelect" class="f-select" required></select>
+        </div>
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Behavior / Action Category</label>
+            <select id="ptCategorySelect" class="f-select" onchange="updatePointAmount()">
+              <option value="Daily Room Inspection Passed" data-pts="15">Room Inspection Clean & Orderly (+15 pts)</option>
+              <option value="School Attendance & Homework Complete" data-pts="25" selected>School & Homework Completion (+25 pts)</option>
+              <option value="Positive Conflict Resolution" data-pts="35">Positive De-escalation & Conflict Resolution (+35 pts)</option>
+              <option value="Cottage Chore Mastery" data-pts="20">Cottage Chore Completed without Prompt (+20 pts)</option>
+              <option value="Peer Mentorship & Leadership" data-pts="50">Peer Mentorship & Kindness (+50 pts)</option>
+              <option value="Therapy Session Engagement" data-pts="30">Active Therapy / Counseling Participation (+30 pts)</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Points to Award</label>
+            <input type="number" id="ptAmount" class="f-input" value="25" min="5" max="200" required/>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Staff Notes (Optional)</label>
+          <input type="text" id="ptNotes" class="f-input" placeholder="e.g. Displayed great maturity during kitchen cleanup."/>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem">
+          <button type="button" class="btn" style="border-color:var(--dim);color:var(--dim)" onclick="closeModal('modalAwardPoints')">Cancel</button>
+          <button type="submit" class="btn gold">Award Points ★</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: New SIR Incident Report -->
+  <div class="modal-overlay" id="modalNewIncident">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modalNewIncident')">✕</button>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.2em;color:var(--red);margin-bottom:.5rem;text-transform:uppercase">File Significant Incident Report (SIR)</h2>
+      <p style="font-size:.88rem;color:var(--dim2);font-style:italic;margin-bottom:1.5rem">Official documentation for state regulatory review and LCCA sign-off.</p>
+      <form onsubmit="handleNewIncident(event)">
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Incident Classification</label>
+            <select id="sirType" class="f-select" required>
+              <option value="Physical Aggression (De-escalated)">Physical Aggression (De-escalated)</option>
+              <option value="Property Damage">Property Damage</option>
+              <option value="Runaway / AWOL Attempt">Runaway / AWOL Attempt</option>
+              <option value="Medical Emergency / Injury">Medical Emergency / Injury</option>
+              <option value="Contraband Discovered">Contraband Discovered</option>
+              <option value="Verbal Defiance / Code Green">Verbal Defiance / Code Green</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Resident Involved</label>
+            <select id="sirResident" class="f-select" required></select>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Facility Cottage</label>
+            <select id="sirLocation" class="f-select">
+              <option value="Haven House (Cottage A)">Haven House (Cottage A)</option>
+              <option value="Oakridge Home (Cottage B)">Oakridge Home (Cottage B)</option>
+              <option value="Crestview Center">Crestview Center</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Reporting Staff Member</label>
+            <input type="text" id="sirStaff" class="f-input" value="Sarah Jenkins, LMSW" required/>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Incident Narrative & De-escalation Techniques Used</label>
+          <textarea id="sirNarrative" rows="4" class="f-textarea" placeholder="Provide factual chronological account: triggers observed, verbal prompts given, and outcome..." required></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem">
+          <button type="button" class="btn" style="border-color:var(--dim);color:var(--dim)" onclick="closeModal('modalNewIncident')">Cancel</button>
+          <button type="submit" class="btn red">Submit SIR for LCCA Sign-off ⚠</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Case to Employee -->
+  <div class="modal-overlay" id="modalAssignCase">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modalAssignCase')">✕</button>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.2em;color:var(--green);margin-bottom:.5rem;text-transform:uppercase">LCCA Case Assignment</h2>
+      <p style="font-size:.88rem;color:var(--dim2);font-style:italic;margin-bottom:1.5rem">Delegate resident case management duties and compliance deliverables to staff.</p>
+      <form onsubmit="handleAssignCase(event)">
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Select Resident</label>
+            <select id="assignResident" class="f-select" required></select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Assign To Caseworker</label>
+            <select id="assignStaff" class="f-select" required>
+              <option value="Sarah Jenkins, LMSW">Sarah Jenkins, LMSW</option>
+              <option value="David Morales, BSW">David Morales, BSW</option>
+              <option value="Alicia Vance, Case Manager">Alicia Vance, Case Manager</option>
+              <option value="Jason Reed, Youth Specialist">Jason Reed, Youth Specialist</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Primary Deliverable / Milestone</label>
+            <select id="assignDeliverable" class="f-select">
+              <option value="30-Day Plan of Service (POS)">30-Day Plan of Service (POS)</option>
+              <option value="Quarterly Court / CPS Review">Quarterly Court / CPS Review</option>
+              <option value="School IEP & Behavioral Review">School IEP & Behavioral Review</option>
+              <option value="Family Reintegration & Supervised Visit">Family Reintegration & Supervised Visit</option>
+              <option value="Independent Living Skills Assessment">Independent Living Skills Assessment</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Due Date</label>
+            <input type="date" id="assignDueDate" class="f-input" value="2026-10-15" required/>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">LCCA Directives / Instructions</label>
+          <textarea id="assignInstructions" rows="3" class="f-textarea" placeholder="Include any specific goals, safety plan reminders, or required clinical assessments..."></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem">
+          <button type="button" class="btn" style="border-color:var(--dim);color:var(--dim)" onclick="closeModal('modalAssignCase')">Cancel</button>
+          <button type="submit" class="btn">Confirm Case Assignment →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Progress Note -->
+  <div class="modal-overlay" id="modalAddProgressNote">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modalAddProgressNote')">✕</button>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.2em;color:var(--green);margin-bottom:.5rem;text-transform:uppercase">Submit Casework Progress Note</h2>
+      <p style="font-size:.88rem;color:var(--dim2);font-style:italic;margin-bottom:1.5rem">Document one-on-one sessions, behavior milestones, or medical checks.</p>
+      <form onsubmit="handleAddProgressNote(event)">
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">Resident</label>
+            <select id="noteResident" class="f-select" required></select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Note Category</label>
+            <select id="noteCategory" class="f-select">
+              <option value="Individual Counseling">Individual Counseling</option>
+              <option value="Life Skills Training">Life Skills Training</option>
+              <option value="Family Contact / Visit">Family Contact / Visit</option>
+              <option value="Academic Support">Academic Support</option>
+              <option value="Medical / Dental Visit">Medical / Dental Visit</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Session Summary & Resident Progress</label>
+          <textarea id="noteNarrative" rows="4" class="f-textarea" placeholder="Detail the resident's mood, participation, goals discussed, and follow-up needed..." required></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem">
+          <button type="button" class="btn" style="border-color:var(--dim);color:var(--dim)" onclick="closeModal('modalAddProgressNote')">Cancel</button>
+          <button type="submit" class="btn">File Note for LCCA Sign-off →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
+  <!-- Application Logic -->
+  <script src="/assets/auth-client.js?v=cloud1"></script>
+  <script>
+    /* ══════════════════════════════════════════════
+       EHR IN-MEMORY DATABASE & DATA STATE
+    ══════════════════════════════════════════════ */
+    let currentRole = 'LCCA'; // 'LCCA' (Admin) or 'CASEWORKER' (Staff) — set from the real session, see INIT below
+    let currentUserName = '';
+
+    let RESIDENTS = [
+      { id: 'RES-101', name: 'Marcus Rivera', dob: '2010-06-15', age: 16, cottage: 'Haven House (Cottage A)', loc: 'Moderate', level: 3, points: 740, medical: 'Asthma Inhaler PRN', caseworker: 'Sarah Jenkins, LMSW', intakeDate: '2025-08-12' },
+      { id: 'RES-102', name: 'Jayden Brooks', dob: '2011-09-22', age: 14, cottage: 'Haven House (Cottage A)', loc: 'Specialized', level: 2, points: 420, medical: 'Peanut Allergy (EpiPen in Med Room)', caseworker: 'David Morales, BSW', intakeDate: '2025-11-04' },
+      { id: 'RES-103', name: 'Elena Cruz', dob: '2012-01-30', age: 14, cottage: 'Oakridge Home (Cottage B)', loc: 'Basic', level: 4, points: 1350, medical: 'Lactose Intolerant', caseworker: 'Alicia Vance, Case Manager', intakeDate: '2025-04-18' },
+      { id: 'RES-104', name: 'Tariq Washington', dob: '2009-12-10', age: 16, cottage: 'Crestview Center', loc: 'Specialized', level: 2, points: 510, medical: 'ADHD Meds @ 08:00 & 16:00', caseworker: 'Jason Reed, Youth Specialist', intakeDate: '2026-01-15' },
+      { id: 'RES-105', name: 'Amara Vance', dob: '2013-04-05', age: 13, cottage: 'Oakridge Home (Cottage B)', loc: 'Moderate', level: 3, points: 890, medical: 'Mild Eczema Topical', caseworker: 'Sarah Jenkins, LMSW', intakeDate: '2025-09-20' },
+      { id: 'RES-106', name: 'Devon Scott', dob: '2010-11-18', age: 15, cottage: 'Crestview Center', loc: 'Basic', level: 3, points: 680, medical: 'None documented', caseworker: 'David Morales, BSW', intakeDate: '2026-02-01' }
+    ];
+
+    let REWARDS_CATALOG = [
+      { id: 'rew-1', title: 'Weekend Movie & Bowling Outing', points: 150, desc: 'Saturday off-campus supervised recreation activity pass.' },
+      { id: 'rew-2', title: 'Extended Tech & Console Hours', points: 50, desc: 'Additional 90 minutes of weekend gaming or streaming.' },
+      { id: 'rew-3', title: 'Cottage Pizza & Wing Feast', points: 100, desc: 'Order personal choice meal for Friday dinner.' },
+      { id: 'rew-4', title: 'Personal Room Decor / Art Pack', points: 200, desc: 'Select posters, bedding, or art supplies for bedroom.' },
+      { id: 'rew-5', title: 'Later Weekend Curfew (Level 3+)', points: 75, desc: '30-minute later cottage lights out on Saturday night.' },
+      { id: 'rew-6', title: 'Life Skills Independent Living Kit', points: 250, desc: 'Cookware starter or wardrobe allowance voucher.' }
+    ];
+
+    let POINTS_LEDGER = [
+      { date: 'Today · 09:15 AM', resident: 'Marcus Rivera', action: 'Daily Room Inspection Passed', pts: '+15', staff: 'Sarah Jenkins, LMSW', status: 'Approved' },
+      { date: 'Today · 10:30 AM', resident: 'Elena Cruz', action: 'Peer Mentorship & Leadership', pts: '+50', staff: 'Alicia Vance', status: 'Approved' },
+      { date: 'Today · 11:45 AM', resident: 'Jayden Brooks', action: 'School Attendance & Homework Complete', pts: '+25', staff: 'David Morales, BSW', status: 'Approved' },
+      { date: 'Yesterday · 04:20 PM', resident: 'Tariq Washington', action: 'Redeemed: Extended Tech & Console Hours', pts: '-50', staff: 'Jason Reed', status: 'Redeemed' }
+    ];
+
+    let SIR_REPORTS = [
+      { id: 'SIR-2026-08', type: 'Physical Aggression (De-escalated)', resident: 'Tariq Washington', facility: 'Crestview Center', date: '2026-09-24 16:40', staff: 'Jason Reed, Youth Specialist', lccaApproved: false, narrative: 'Verbal dispute in common room. Staff employed MANDT de-escalation; resident redirected to calm room without physical restraint.' },
+      { id: 'SIR-2026-07', type: 'Runaway / AWOL Attempt (Prevented)', resident: 'Jayden Brooks', facility: 'Haven House', date: '2026-09-18 20:15', staff: 'David Morales, BSW', lccaApproved: true, narrative: 'Resident accessed perimeter gate during recreation. Staff engaged in supportive dialogue; resident voluntarily returned.' }
+    ];
+
+    let SHIFT_NOTES = [
+      { shift: 'Day Shift (07:00 – 15:00)', facility: 'Haven House (Cottage A)', staff: 'Sarah Jenkins, LMSW', summary: 'All 6 residents attended school on time. Breakfast and chores completed without incident.', meds: 'All morning doses verified on MAR' },
+      { shift: 'Night Shift (23:00 – 07:00)', facility: 'Oakridge Home (Cottage B)', staff: 'Night Supervisor Miller', summary: '15-minute bed checks continuous throughout night. All residents slept peacefully.', meds: 'Bedtime PRN melatonin logged' }
+    ];
+
+    let CASE_ASSIGNMENTS = [
+      { id: 'CASE-01', staff: 'Sarah Jenkins, LMSW', resident: 'Marcus Rivera', deliverable: '30-Day Plan of Service (POS)', assigned: '2026-09-10', due: '2026-10-10', status: 'In Progress' },
+      { id: 'CASE-02', staff: 'David Morales, BSW', resident: 'Jayden Brooks', deliverable: 'Quarterly Court / CPS Review', assigned: '2026-09-12', due: '2026-10-02', status: 'Due Soon' },
+      { id: 'CASE-03', staff: 'Alicia Vance, Case Manager', resident: 'Elena Cruz', deliverable: 'Independent Living Skills Assessment', assigned: '2026-09-05', due: '2026-09-30', status: 'Review Ready' },
+      { id: 'CASE-04', staff: 'Jason Reed, Youth Specialist', resident: 'Tariq Washington', deliverable: 'School IEP & Behavioral Review', assigned: '2026-09-15', due: '2026-10-15', status: 'In Progress' }
+    ];
+
+    let PROGRESS_NOTES = [
+      { date: '2026-09-25', resident: 'Marcus Rivera', staff: 'Sarah Jenkins, LMSW', category: 'Individual Counseling', narrative: 'Discussed goals for high school varsity track. Resident showed exceptional emotional regulation.', signed: true },
+      { date: '2026-09-24', resident: 'Elena Cruz', staff: 'Alicia Vance, Case Manager', category: 'Life Skills Training', narrative: 'Completed personal budget sheet and grocery meal planning module for Level 4 preparation.', signed: true },
+      { date: '2026-09-22', resident: 'Jayden Brooks', staff: 'David Morales, BSW', category: 'Academic Support', narrative: 'Reviewed math quiz results and arranged bi-weekly tutoring with campus volunteer educator.', signed: false }
+    ];
+
+    let FACILITIES = [
+      { name: 'Haven House (Cottage A)', license: 'GRO-TX-98442', capacity: 8, current: 6, age: '12 – 17 Males', supervisor: 'Marcus Chen, Facility Supervisor' },
+      { name: 'Oakridge Home (Cottage B)', license: 'GRO-TX-98443', capacity: 6, current: 4, age: '11 – 16 Females', supervisor: 'Alicia Vance, LCCA Delegate' },
+      { name: 'Crestview Residential Center', license: 'GRO-TX-98444', capacity: 6, current: 4, age: '14 – 17 Co-ed Specialized', supervisor: 'Victoria Thorne, Head LCCA' }
+    ];
+
+    /* ══════════════════════════════════════════════
+       UI RENDERING
+    ══════════════════════════════════════════════ */
+    function renderAll() {
+      renderOverviewTable();
+      renderResidentsTable();
+      renderRewardsStore();
+      renderPointsLedger();
+      renderSIRTable();
+      renderShiftNotes();
+      renderCaseworkTable();
+      renderProgressNotes();
+      renderFacilitiesGrid();
+      populateSelectDropdowns();
+      updateHUDCounts();
+    }
+
+    function updateHUDCounts() {
+      const totalCensus = RESIDENTS.length;
+      document.getElementById('hudCensus').textContent = `${totalCensus} / 20`;
+      document.getElementById('cntKids').textContent = totalCensus;
+      document.getElementById('hudCasesOpen').textContent = `${CASE_ASSIGNMENTS.length} Cases`;
+      const pendingSIR = SIR_REPORTS.filter(s => !s.lccaApproved).length;
+      document.getElementById('hudSIRCount').textContent = `${pendingSIR} Pending`;
+    }
+
+    function renderOverviewTable() {
+      const tbody = document.getElementById('tblOverviewResidents');
+      tbody.innerHTML = RESIDENTS.slice(0, 5).map(r => `
+        <tr>
+          <td><strong style="color:var(--white)">${r.name}</strong></td>
+          <td>${r.age} yrs (${r.dob})</td>
+          <td>${r.cottage}</td>
+          <td><span class="badge ${r.loc === 'Specialized' ? 'gold' : (r.loc === 'Intensive' ? 'red' : 'green')}">${r.loc}</span></td>
+          <td><span class="badge ${r.level >= 3 ? 'gold' : 'dim'}">Level ${r.level}</span></td>
+          <td><span style="color:var(--gold);font-weight:600">${r.points} pts</span></td>
+          <td>${r.caseworker}</td>
+          <td><button class="btn sm" onclick="openAwardFor('${r.id}')">★ Award</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderResidentsTable() {
+      const q = (document.getElementById('searchKids')?.value || '').toLowerCase();
+      const filtered = RESIDENTS.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.cottage.toLowerCase().includes(q) ||
+        r.caseworker.toLowerCase().includes(q)
+      );
+
+      const tbody = document.getElementById('tblFullResidents');
+      tbody.innerHTML = filtered.map(r => `
+        <tr>
+          <td><span style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--dim2)">${r.id}</span></td>
+          <td><strong style="color:var(--white)">${r.name}</strong><br/><span style="font-size:.78rem;color:var(--dim)">DOB: ${r.dob} (Age ${r.age})</span></td>
+          <td>${r.cottage}</td>
+          <td><span class="badge ${r.loc === 'Specialized' ? 'gold' : (r.loc === 'Intensive' ? 'red' : 'green')}">${r.loc}</span></td>
+          <td><span class="badge ${r.level >= 3 ? 'gold' : 'dim'}">Level ${r.level}</span></td>
+          <td><strong style="color:var(--gold)">${r.points} pts</strong></td>
+          <td><span style="color:${r.medical !== 'None documented' ? 'var(--gold)' : 'var(--dim2)'}">⚠ ${r.medical}</span></td>
+          <td>${r.caseworker}</td>
+          <td>
+            <div style="display:flex;gap:.4rem">
+              <button class="btn sm" onclick="openAwardFor('${r.id}')">★ Pts</button>
+              <button class="btn sm gold" onclick="openAssignFor('${r.id}')">Assign</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRewardsStore() {
+      const grid = document.getElementById('rewardsCatalogGrid');
+      grid.innerHTML = REWARDS_CATALOG.map(item => `
+        <div class="reward-item">
+          <div>
+            <div class="reward-title">${item.title}</div>
+            <div class="reward-pts">${item.points} Points</div>
+            <div class="reward-desc">${item.desc}</div>
+          </div>
+          <button class="btn sm gold" style="width:100%;justify-content:center" onclick="redeemRewardPrompt('${item.id}', '${item.title}', ${item.points})">Redeem for Resident →</button>
+        </div>
+      `).join('');
+    }
+
+    function renderPointsLedger() {
+      const tbody = document.getElementById('tblPointsLedger');
+      tbody.innerHTML = POINTS_LEDGER.map(l => `
+        <tr>
+          <td>${l.date}</td>
+          <td><strong style="color:var(--white)">${l.resident}</strong></td>
+          <td>${l.action}</td>
+          <td><span style="color:${l.pts.startsWith('+') ? 'var(--green)' : 'var(--red)'};font-weight:600">${l.pts} pts</span></td>
+          <td>${l.staff}</td>
+          <td><span class="badge ${l.status === 'Approved' ? 'green' : 'gold'}">${l.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSIRTable() {
+      const tbody = document.getElementById('tblSIRReports');
+      tbody.innerHTML = SIR_REPORTS.map(s => `
+        <tr>
+          <td><span style="font-family:'Cinzel',serif;color:var(--dim2)">${s.id}</span></td>
+          <td><strong style="color:${s.lccaApproved ? 'var(--chrome)' : 'var(--red)'}">${s.type}</strong></td>
+          <td>${s.resident}</td>
+          <td>${s.facility}</td>
+          <td>${s.date}</td>
+          <td>${s.staff}</td>
+          <td>
+            <span class="badge ${s.lccaApproved ? 'green' : 'red'}">${s.lccaApproved ? '✓ LCCA Approved' : '⏳ Pending LCCA'}</span>
+          </td>
+          <td>
+            ${!s.lccaApproved && currentRole === 'LCCA'
+              ? `<button class="btn sm green" onclick="approveSIR('${s.id}')">Sign & Approve</button>`
+              : `<button class="btn sm" onclick="alert('${s.narrative.replace(/'/g, "\\'")}')">View Details</button>`
+            }
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderShiftNotes() {
+      const tbody = document.getElementById('tblShiftNotes');
+      tbody.innerHTML = SHIFT_NOTES.map(sn => `
+        <tr>
+          <td><strong style="color:var(--green)">${sn.shift}</strong></td>
+          <td>${sn.facility}</td>
+          <td>${sn.staff}</td>
+          <td>${sn.summary}</td>
+          <td><span style="color:var(--gold)">${sn.meds}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCaseworkTable() {
+      const tbody = document.getElementById('tblCaseworkAssignments');
+      let list = CASE_ASSIGNMENTS;
+      if (currentRole === 'CASEWORKER') {
+        // Staff only see their own assigned caseload
+        list = CASE_ASSIGNMENTS.filter(c => currentUserName && c.staff.includes(currentUserName));
+      }
+
+      tbody.innerHTML = list.map(c => `
+        <tr>
+          <td><strong style="color:var(--white)">${c.staff}</strong></td>
+          <td>${c.resident}</td>
+          <td>${c.deliverable}</td>
+          <td>${c.assigned}</td>
+          <td><span style="color:${c.status === 'Due Soon' ? 'var(--red)' : 'var(--chrome)'}">${c.due}</span></td>
+          <td><span class="badge ${c.status === 'Review Ready' ? 'green' : (c.status === 'Due Soon' ? 'red' : 'gold')}">${c.status}</span></td>
+          <td>
+            ${currentRole === 'LCCA' && c.status === 'Review Ready'
+              ? `<button class="btn sm green" onclick="approveCase('${c.id}')">Approve Deliverable</button>`
+              : `<button class="btn sm" onclick="openModal('modalAddProgressNote')">+ Log Note</button>`
+            }
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProgressNotes() {
+      const tbody = document.getElementById('tblProgressNotes');
+      tbody.innerHTML = PROGRESS_NOTES.map(p => `
+        <tr>
+          <td>${p.date}</td>
+          <td><strong style="color:var(--white)">${p.resident}</strong></td>
+          <td>${p.staff}</td>
+          <td><span class="badge green">${p.category}</span></td>
+          <td style="max-width:320px">${p.narrative}</td>
+          <td><span class="badge ${p.signed ? 'green' : 'gold'}">${p.signed ? '✓ Signed by LCCA' : 'Pending Signature'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderFacilitiesGrid() {
+      const grid = document.getElementById('facilitiesGrid');
+      grid.innerHTML = FACILITIES.map(f => `
+        <div class="stat-card" style="border-left:3px solid var(--green)">
+          <div class="stat-lbl">${f.license}</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:600;color:var(--white);margin:.4rem 0">${f.name}</div>
+          <div style="display:flex;justify-content:space-between;margin:.8rem 0">
+            <span style="font-size:.85rem;color:var(--dim2)">Census Capacity:</span>
+            <strong style="color:var(--green)">${f.current} / ${f.capacity} beds</strong>
+          </div>
+          <div style="font-size:.82rem;font-style:italic;color:var(--dim)">Demographics: ${f.age}</div>
+          <div style="font-size:.82rem;font-style:italic;color:var(--chrome);margin-top:.4rem">Supervisor: ${f.supervisor}</div>
+        </div>
+      `).join('');
+    }
+
+    function populateSelectDropdowns() {
+      const opts = RESIDENTS.map(r => `<option value="${r.name}">${r.name} (${r.cottage})</option>`).join('');
+      const ptSel = document.getElementById('ptResidentSelect');
+      const sirSel = document.getElementById('sirResident');
+      const assignSel = document.getElementById('assignResident');
+      const noteSel = document.getElementById('noteResident');
+      if (ptSel) ptSel.innerHTML = opts;
+      if (sirSel) sirSel.innerHTML = opts;
+      if (assignSel) assignSel.innerHTML = opts;
+      if (noteSel) noteSel.innerHTML = opts;
+    }
+
+    /* ══════════════════════════════════════════════
+       ACTIONS & EVENT HANDLERS
+    ══════════════════════════════════════════════ */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const activePanel = document.getElementById(`tab-${tabId}`);
+      if (activePanel) activePanel.classList.add('active');
+      const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Role is now set from the authenticated session on load (see INIT below),
+    // not switchable client-side. Kept as a function in case a future admin
+    // "view as" feature is added server-side.
+    function applyRoleFromUser(user) {
+      const isLcca = user.role === 'lcca_admin' || user.role === 'admin';
+      currentRole = isLcca ? 'LCCA' : 'CASEWORKER';
+      currentUserName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : (user.name || '');
+      document.getElementById('roleText').textContent = isLcca ? 'Role: LCCA Administrator' : 'Role: Staff Caseworker';
+      document.getElementById('userNameLabel').textContent = user.name || user.email || 'Care Staff';
+      syncAvatars(user.avatar, user.name || user.email || 'Care Staff');
+      document.getElementById('roleNoticeText').textContent = isLcca
+        ? 'Admin / LCCA View (Full Case Assignment & Staff Delegation)'
+        : 'Staff Caseworker View (Showing your assigned caseload & service notes)';
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function openAwardFor(resId) {
+      const r = RESIDENTS.find(x => x.id === resId);
+      if (r) {
+        document.getElementById('ptResidentSelect').value = r.name;
+        openModal('modalAwardPoints');
+      }
+    }
+
+    function openAssignFor(resId) {
+      const r = RESIDENTS.find(x => x.id === resId);
+      if (r) {
+        document.getElementById('assignResident').value = r.name;
+        openModal('modalAssignCase');
+      }
+    }
+
+    function updatePointAmount() {
+      const sel = document.getElementById('ptCategorySelect');
+      const opt = sel.options[sel.selectedIndex];
+      const pts = opt.dataset.pts || 25;
+      document.getElementById('ptAmount').value = pts;
+    }
+
+    function handleNewResident(e) {
+      e.preventDefault();
+      const name = document.getElementById('intakeName').value.trim();
+      const dob = document.getElementById('intakeDOB').value;
+      const cottage = document.getElementById('intakeFacility').value;
+      const loc = document.getElementById('intakeLOC').value;
+      const caseworker = document.getElementById('intakeCaseworker').value;
+      const medical = document.getElementById('intakeMedical').value.trim() || 'None documented';
+
+      const birthYear = new Date(dob).getFullYear();
+      const age = new Date().getFullYear() - birthYear;
+      const newId = `RES-${100 + RESIDENTS.length + 1}`;
+
+      RESIDENTS.push({
+        id: newId,
+        name,
+        dob,
+        age: age || 14,
+        cottage,
+        loc,
+        level: 1,
+        points: 100, // starting orientation bonus
+        medical,
+        caseworker,
+        intakeDate: new Date().toISOString().split('T')[0]
+      });
+
+      // Auto create intake assignment
+      CASE_ASSIGNMENTS.push({
+        id: `CASE-0${CASE_ASSIGNMENTS.length + 1}`,
+        staff: caseworker,
+        resident: name,
+        deliverable: '30-Day Plan of Service (POS)',
+        assigned: new Date().toISOString().split('T')[0],
+        due: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+        status: 'In Progress'
+      });
+
+      closeModal('modalNewResident');
+      renderAll();
+      showToast(`Admitted resident ${name} to ${cottage}`);
+    }
+
+    function handleAwardPoints(e) {
+      e.preventDefault();
+      const resName = document.getElementById('ptResidentSelect').value;
+      const action = document.getElementById('ptCategorySelect').value;
+      const amount = parseInt(document.getElementById('ptAmount').value, 10);
+      const notes = document.getElementById('ptNotes').value.trim();
+
+      const r = RESIDENTS.find(x => x.name === resName);
+      if (r) {
+        r.points += amount;
+        // Level up check
+        if (r.points >= 1200) r.level = 4;
+        else if (r.points >= 600) r.level = 3;
+        else if (r.points >= 200) r.level = 2;
+
+        POINTS_LEDGER.unshift({
+          date: 'Just now',
+          resident: r.name,
+          action: notes ? `${action} (${notes})` : action,
+          pts: `+${amount}`,
+          staff: document.getElementById('userNameLabel').textContent,
+          status: 'Approved'
+        });
+      }
+
+      closeModal('modalAwardPoints');
+      renderAll();
+      showToast(`Awarded +${amount} points to ${resName}!`);
+    }
+
+    function redeemRewardPrompt(rewId, rewTitle, cost) {
+      const resName = prompt(`Select Resident to redeem "${rewTitle}" (${cost} points):\n\nEnter resident name:`, RESIDENTS[0].name);
+      if (!resName) return;
+
+      const r = RESIDENTS.find(x => x.name.toLowerCase() === resName.trim().toLowerCase());
+      if (!r) {
+        alert('Resident not found in current census.');
+        return;
+      }
+
+      if (r.points < cost) {
+        alert(`${r.name} has ${r.points} points. This reward requires ${cost} points.`);
+        return;
+      }
+
+      r.points -= cost;
+      POINTS_LEDGER.unshift({
+        date: 'Just now',
+        resident: r.name,
+        action: `Redeemed: ${rewTitle}`,
+        pts: `-${cost}`,
+        staff: document.getElementById('userNameLabel').textContent,
+        status: 'Approved'
+      });
+
+      renderAll();
+      showToast(`Redeemed ${rewTitle} for ${r.name}`);
+    }
+
+    function handleNewIncident(e) {
+      e.preventDefault();
+      const type = document.getElementById('sirType').value;
+      const resident = document.getElementById('sirResident').value;
+      const facility = document.getElementById('sirLocation').value;
+      const staff = document.getElementById('sirStaff').value;
+      const narrative = document.getElementById('sirNarrative').value.trim();
+
+      const newId = `SIR-2026-0${SIR_REPORTS.length + 8}`;
+      SIR_REPORTS.unshift({
+        id: newId,
+        type,
+        resident,
+        facility,
+        date: new Date().toLocaleString(),
+        staff,
+        lccaApproved: false,
+        narrative
+      });
+
+      closeModal('modalNewIncident');
+      renderAll();
+      showToast(`Filed SIR report ${newId} (Pending LCCA Approval)`);
+    }
+
+    function approveSIR(sirId) {
+      const item = SIR_REPORTS.find(s => s.id === sirId);
+      if (item) {
+        item.lccaApproved = true;
+        renderSIRTable();
+        updateHUDCounts();
+        showToast(`LCCA approved & signed ${sirId}`);
+      }
+    }
+
+    function handleAssignCase(e) {
+      e.preventDefault();
+      const resident = document.getElementById('assignResident').value;
+      const staff = document.getElementById('assignStaff').value;
+      const deliverable = document.getElementById('assignDeliverable').value;
+      const due = document.getElementById('assignDueDate').value;
+
+      CASE_ASSIGNMENTS.unshift({
+        id: `CASE-0${CASE_ASSIGNMENTS.length + 1}`,
+        staff,
+        resident,
+        deliverable,
+        assigned: new Date().toISOString().split('T')[0],
+        due,
+        status: 'In Progress'
+      });
+
+      closeModal('modalAssignCase');
+      renderAll();
+      showToast(`Assigned ${deliverable} to ${staff}`);
+    }
+
+    function approveCase(caseId) {
+      const c = CASE_ASSIGNMENTS.find(x => x.id === caseId);
+      if (c) {
+        c.status = 'Approved';
+        renderCaseworkTable();
+        showToast(`LCCA signed off deliverable for ${c.resident}`);
+      }
+    }
+
+    function handleAddProgressNote(e) {
+      e.preventDefault();
+      const resident = document.getElementById('noteResident').value;
+      const category = document.getElementById('noteCategory').value;
+      const narrative = document.getElementById('noteNarrative').value.trim();
+
+      PROGRESS_NOTES.unshift({
+        date: new Date().toISOString().split('T')[0],
+        resident,
+        staff: document.getElementById('userNameLabel').textContent,
+        category,
+        narrative,
+        signed: currentRole === 'LCCA'
+      });
+
+      closeModal('modalAddProgressNote');
+      renderProgressNotes();
+      showToast('Progress note logged to resident chart');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = `✓ ${msg}`;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2600);
+    }
+
+    // Sign out handler
+    document.getElementById('btnSignOut').addEventListener('click', async () => {
+      await LVOAuth.logout();
+      window.location.href = 'https://operations.wearelvo.com';
+    });
+
+    // INIT — real session gate. No token or an invalid/expired session sends
+    // the visitor back to the Ops login gate; role and name come only from
+    // the authenticated user the server returns, never from this page.
+    window.addEventListener('load', async () => {
+      const token = LVOAuth.getToken();
+      if (!token) {
+        window.location.href = 'https://operations.wearelvo.com';
+        return;
+      }
+
+      const user = await LVOAuth.session();
+      if (!user) {
+        LVOAuth.clearToken();
+        window.location.href = 'https://operations.wearelvo.com';
+        return;
+      }
+
+      if (user.division !== 'Ops') {
+        // Account exists but belongs to a different division's dashboard.
+        window.location.href = 'https://operations.wearelvo.com';
+        return;
+      }
+
+      applyRoleFromUser(user);
+      renderAll();
+    });
+  
+/* ── AVATARS ── */
+function avInit(n){return (String(n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('')||'?').toUpperCase()}
+function avEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function avHTML(url,name,px){px=px||22;const st=`width:${px}px;height:${px}px`;
+  return url?`<img class="av" style="${st}" src="${avEsc(url)}" alt="" onerror="this.outerHTML='<span class=&quot;av av-i&quot; style=&quot;${st}&quot;>${avEsc(avInit(name))}</span>'">`
+  :`<span class="av av-i" style="${st};font-size:${Math.round(px*.4)}px">${avEsc(avInit(name))}</span>`}
+function syncAvatars(url,name){
+  [['tbAvatarSlot',26],['acAvatarSlot',30],['userAvatarSlot',26]].forEach(([id,px])=>{const el=document.getElementById(id);if(el)el.innerHTML=avHTML(url,name,px)});
+}
+</script>
+<script src="https://lvo-cloud.cloud/assets/lvo-status.js" data-division="Ops" defer></script>
+</body>
+</html>
